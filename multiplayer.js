@@ -20,6 +20,7 @@ let game = null;
 let myName = 'Player';
 let roomCode = '';
 let pendingBet = 0;
+let lastPlacedBet = 0;
 let lastSeenRound = -1;
 
 const MP_DEAL_DELAY_MS = 260;
@@ -385,7 +386,7 @@ function leaveTable(hostClosed) {
   try { if (hostConn) hostConn.close(); } catch (e) { /* already closed */ }
   try { if (peer) peer.destroy(); } catch (e) { /* already destroyed */ }
   peer = null; hostConn = null; connections = {}; game = null; isHost = false; selfId = null;
-  pendingBet = 0; lastSeenRound = -1;
+  pendingBet = 0; lastPlacedBet = 0; lastSeenRound = -1;
   document.getElementById('mp-table-wrap').classList.add('hidden');
   document.getElementById('lobby-panel').classList.remove('hidden');
   if (!hostClosed) document.getElementById('lobby-status').textContent = '';
@@ -585,6 +586,13 @@ function renderControls() {
 
   if (game.phase === 'betting' && !me.betReady) {
     betWrap.classList.remove('hidden');
+    const repeatBtn = document.getElementById('mp-repeat-bet');
+    if (lastPlacedBet > 0 && lastPlacedBet <= me.bankroll) {
+      repeatBtn.textContent = `Repeat $${lastPlacedBet}`;
+      repeatBtn.classList.remove('hidden');
+    } else {
+      repeatBtn.classList.add('hidden');
+    }
   } else if (game.phase === 'turns' && game.order[game.turnIdx] === selfId) {
     actionWrap.classList.remove('hidden');
     updateMpActionAvailability(me);
@@ -651,6 +659,15 @@ document.getElementById('mp-clear-bet').addEventListener('click', () => {
 });
 
 document.getElementById('mp-place-bet').addEventListener('click', () => {
+  if (pendingBet <= 0) return;
+  lastPlacedBet = pendingBet;
+  sendToHost({ type: 'bet', amount: pendingBet });
+});
+
+document.getElementById('mp-repeat-bet').addEventListener('click', () => {
+  if (lastPlacedBet <= 0) return;
+  pendingBet = lastPlacedBet;
+  document.getElementById('mp-current-bet').textContent = `$${pendingBet}`;
   sendToHost({ type: 'bet', amount: pendingBet });
 });
 
