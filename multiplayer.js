@@ -402,16 +402,27 @@ function mpJudgeDecision(actionTaken, me) {
 
 // ---- Rendering ----
 
-function cardHTML(card, hidden) {
-  if (hidden) return `<div class="card back"></div>`;
+let mpLastDealerCount = 0;
+let mpLastHandCounts = {};
+let mpDealerHoleWasHidden = true;
+let mpLastRoundNum = -1;
+
+function cardHTML(card, hidden, isNew, isFlip) {
+  const animClass = isFlip ? 'card-flip' : (isNew ? 'card-deal' : '');
+  if (hidden) return `<div class="card back ${animClass}"></div>`;
   const red = card.suit === '♥' || card.suit === '♦';
-  return `<div class="card ${red ? 'red' : 'black'}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
+  return `<div class="card ${red ? 'red' : 'black'} ${animClass}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
 }
 
 function renderDealer() {
   const hideHole = game.phase === 'betting' || game.phase === 'turns';
   const cardsEl = document.getElementById('mp-dealer-cards');
-  cardsEl.innerHTML = (game.dealerCards || []).map((c, i) => cardHTML(c, hideHole && i === 1)).join('');
+  cardsEl.innerHTML = (game.dealerCards || []).map((c, i) => {
+    const isFlip = i === 1 && mpDealerHoleWasHidden && !hideHole;
+    return cardHTML(c, hideHole && i === 1, i >= mpLastDealerCount, isFlip);
+  }).join('');
+  mpLastDealerCount = (game.dealerCards || []).length;
+  mpDealerHoleWasHidden = hideHole;
 
   const totalEl = document.getElementById('mp-dealer-total');
   if (!game.dealerCards || game.dealerCards.length === 0) {
@@ -442,10 +453,14 @@ function renderSeats() {
     if (game.phase === 'settled' && p.result) status = ` — ${RESULT_TEXT_MP[p.result]}`;
     if (!p.connected) status += ' (disconnected)';
 
+    const prevCount = mpLastHandCounts[id] || 0;
+    const cardsHTML = (p.cards || []).map((c, i) => cardHTML(c, false, i >= prevCount)).join('');
+    mpLastHandCounts[id] = (p.cards || []).length;
+
     return `
       <div class="mp-seat ${isTurn ? 'active-hand' : ''} ${isMe ? 'mp-seat-me' : ''}">
         <div class="mp-seat-name">${escapeHtml(p.name)}${isMe ? ' (you)' : ''}${escapeHtml(status)}</div>
-        <div class="card-row">${(p.cards || []).map(c => cardHTML(c, false)).join('')}</div>
+        <div class="card-row">${cardsHTML}</div>
         <div class="mp-seat-footer">
           <span class="total-badge">${hasCards ? `(${ev.total}${ev.isSoft ? ' soft' : ''})` : ''}</span>
           <span class="hand-bet"><span class="hand-bet-chip"></span>$${p.bet}</span>
@@ -521,6 +536,12 @@ function renderControls() {
 
 function renderAll() {
   if (!game) return;
+  if (game.roundNum !== mpLastRoundNum) {
+    mpLastRoundNum = game.roundNum;
+    mpLastDealerCount = 0;
+    mpLastHandCounts = {};
+    mpDealerHoleWasHidden = true;
+  }
   const connectedCount = Object.values(game.players).filter(p => p.connected).length;
   document.getElementById('connection-status').textContent = `${connectedCount} player${connectedCount === 1 ? '' : 's'} connected`;
   renderDealer();

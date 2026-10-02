@@ -355,6 +355,7 @@ main {
 .card-row {
   display: flex;
   gap: -10px;
+  perspective: 700px;
 }
 
 .card {
@@ -376,6 +377,25 @@ main {
 
 .card:first-child { margin-left: 0; }
 .card:hover { transform: translateY(-6px); }
+
+@keyframes dealCard {
+  0% { opacity: 0; transform: translate(-70px, -90px) scale(0.55) rotate(-18deg); }
+  65% { opacity: 1; }
+  100% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
+.card.card-deal {
+  animation: dealCard 0.38s cubic-bezier(.21,.73,.34,1.04) both;
+}
+
+@keyframes flipReveal {
+  0% { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+.card.card-flip {
+  animation: flipReveal 0.28s ease-out both;
+}
 
 .card .suit { font-size: 1.35rem; }
 .card.red { color: var(--red); }

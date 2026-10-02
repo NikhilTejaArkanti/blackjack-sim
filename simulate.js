@@ -422,7 +422,7 @@ function exportCSV(records) {
 
 function cardHTML(card) {
   const red = card.suit === '♥' || card.suit === '♦';
-  return `<div class="card ${red ? 'red' : 'black'}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
+  return `<div class="card ${red ? 'red' : 'black'} card-deal"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
 }
 
 function updateLiveCounts(state, upcomingBet) {
