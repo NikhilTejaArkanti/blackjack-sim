@@ -15,11 +15,18 @@ let selfId = null;
 let hostConn = null; // client-side: connection to the host
 let connections = {}; // host-side: peerId -> DataConnection
 let shoe = [];
+let discardCount = 0;
 let game = null;
 let myName = 'Player';
 let roomCode = '';
 let pendingBet = 0;
 let lastSeenRound = -1;
+
+const MP_DEAL_DELAY_MS = 260;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 const RESULT_TEXT_MP = {
   win: 'Win', lose: 'Lose', push: 'Push', blackjack: 'Blackjack!', surrender: 'Surrendered',
@@ -41,12 +48,23 @@ function escapeHtml(s) {
 // ---- Host-side game engine ----
 
 function ensureShoe() {
-  if (shoe.length < 15) shoe = makeShoe(6);
+  if (shoe.length < 15) {
+    shoe = makeShoe(6);
+    discardCount = 0;
+  }
 }
 
 function drawCard() {
   ensureShoe();
   return shoe.pop();
+}
+
+// Draws one card onto the given array, then broadcasts and pauses so every
+// client sees cards arrive one at a time, flying in from the shoe.
+async function dealOneCardMP(targetArray) {
+  targetArray.push(drawCard());
+  broadcastState();
+  await sleep(MP_DEAL_DELAY_MS);
 }
 
 function hostInit(name) {
@@ -60,6 +78,9 @@ function hostInit(name) {
     hostId: selfId,
   };
   shoe = makeShoe(6);
+  discardCount = 0;
+  game.shoeCount = shoe.length;
+  game.discardCount = discardCount;
   addPlayerToGame(selfId, name);
 }
 
@@ -118,8 +139,9 @@ function maybeStartRound() {
   if (allReady) dealRound();
 }
 
-function dealRound() {
+async function dealRound() {
   game.roundNum += 1;
+  game.phase = 'dealing';
   for (const id of Object.keys(game.players)) {
     const p = game.players[id];
     p.cards = [];
@@ -137,14 +159,20 @@ function dealRound() {
   }
 
   ensureShoe();
-  game.dealerCards = [drawCard(), drawCard()];
-  for (const id of activeIds) {
-    const p = game.players[id];
-    p.bankroll -= p.bet;
-    p.cards = [drawCard(), drawCard()];
-  }
+  game.dealerCards = [];
+  for (const id of activeIds) game.players[id].cards = [];
   game.order = activeIds;
   game.turnIdx = -1;
+  for (const id of activeIds) game.players[id].bankroll -= game.players[id].bet;
+  broadcastState();
+
+  // Classic deal order: one card to each player, then the dealer, twice
+  // (dealer's second card stays hidden client-side until it's revealed).
+  for (const id of activeIds) await dealOneCardMP(game.players[id].cards);
+  await dealOneCardMP(game.dealerCards);
+  for (const id of activeIds) await dealOneCardMP(game.players[id].cards);
+  await dealOneCardMP(game.dealerCards);
+
   game.phase = 'turns';
 
   for (const id of activeIds) {
@@ -152,14 +180,14 @@ function dealRound() {
   }
 
   if (evaluateHand(game.dealerCards).isBlackjack) {
-    settleRound();
+    await settleRound();
     return;
   }
 
   advanceTurn();
 }
 
-function advanceTurn() {
+async function advanceTurn() {
   let i = game.turnIdx + 1;
   while (i < game.order.length) {
     const id = game.order[i];
@@ -171,7 +199,7 @@ function advanceTurn() {
     i++;
   }
   game.turnIdx = -1;
-  dealerPlay();
+  await dealerPlay();
 }
 
 function applyMove(peerId, action) {
@@ -201,8 +229,9 @@ function applyMove(peerId, action) {
   }
 }
 
-function dealerPlay() {
+async function dealerPlay() {
   game.phase = 'dealer';
+  broadcastState(); // reveal the hole card before any further draws
   const anyLive = game.order.some(id => {
     const p = game.players[id];
     if (p.surrendered) return false;
@@ -211,7 +240,7 @@ function dealerPlay() {
   if (anyLive) {
     let dEval = evaluateHand(game.dealerCards);
     while (dEval.total < 17) {
-      game.dealerCards.push(drawCard());
+      await dealOneCardMP(game.dealerCards);
       dEval = evaluateHand(game.dealerCards);
     }
   }
@@ -236,6 +265,7 @@ function settleRound() {
     else if (ev.total < dEval.total) { p.result = 'lose'; }
     else { p.result = 'push'; p.bankroll += p.bet; }
   }
+  discardCount += game.dealerCards.length + game.order.reduce((sum, id) => sum + game.players[id].cards.length, 0);
   game.phase = 'settled';
   broadcastState();
 }
@@ -278,6 +308,8 @@ function hostHandleMessage(peerId, msg) {
 }
 
 function broadcastState() {
+  game.shoeCount = shoe.length;
+  game.discardCount = discardCount;
   const payload = { type: 'state', state: game };
   for (const id in connections) {
     try { connections[id].send(payload); } catch (e) { /* peer likely gone; disconnect handler will clean up */ }
@@ -408,14 +440,44 @@ let mpDealerHoleWasHidden = true;
 let mpLastRoundNum = -1;
 
 function cardHTML(card, hidden, isNew, isFlip) {
-  const animClass = isFlip ? 'card-flip' : (isNew ? 'card-deal' : '');
-  if (hidden) return `<div class="card back ${animClass}"></div>`;
+  const dealAttr = isNew ? 'data-deal="1"' : '';
+  const flipClass = isFlip ? 'card-flip' : '';
+  if (hidden) return `<div class="card back ${flipClass}" ${dealAttr}></div>`;
   const red = card.suit === '♥' || card.suit === '♦';
-  return `<div class="card ${red ? 'red' : 'black'} ${animClass}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
+  return `<div class="card ${red ? 'red' : 'black'} ${flipClass}" ${dealAttr}><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
+}
+
+// Flies each newly dealt card in from the shoe's actual on-screen position.
+function animateDealtCardsMP() {
+  const deckEl = document.getElementById('shoe-visual');
+  if (!deckEl) return;
+  const deckRect = deckEl.getBoundingClientRect();
+  const deckCenter = { x: deckRect.left + deckRect.width / 2, y: deckRect.top + deckRect.height / 2 };
+
+  document.querySelectorAll('[data-deal="1"]').forEach(el => {
+    const cardRect = el.getBoundingClientRect();
+    const cardCenter = { x: cardRect.left + cardRect.width / 2, y: cardRect.top + cardRect.height / 2 };
+    const dx = deckCenter.x - cardCenter.x;
+    const dy = deckCenter.y - cardCenter.y;
+    el.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(0.5) rotate(-12deg)`, opacity: 0.3 },
+      { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+    ], { duration: 240, easing: 'cubic-bezier(.21,.68,.33,1.02)' });
+    el.removeAttribute('data-deal');
+  });
+}
+
+function updateMpDeckCounts() {
+  const shoeCountEl = document.getElementById('shoe-count');
+  const discardCountEl = document.getElementById('discard-count');
+  const discardVisual = document.getElementById('discard-visual');
+  if (shoeCountEl) shoeCountEl.textContent = game.shoeCount ?? '';
+  if (discardCountEl) discardCountEl.textContent = game.discardCount ?? 0;
+  if (discardVisual) discardVisual.classList.toggle('hidden', !game.discardCount);
 }
 
 function renderDealer() {
-  const hideHole = game.phase === 'betting' || game.phase === 'turns';
+  const hideHole = game.phase === 'betting' || game.phase === 'dealing' || game.phase === 'turns';
   const cardsEl = document.getElementById('mp-dealer-cards');
   cardsEl.innerHTML = (game.dealerCards || []).map((c, i) => {
     const isFlip = i === 1 && mpDealerHoleWasHidden && !hideHole;
@@ -559,6 +621,8 @@ function renderAll() {
   renderSeats();
   renderPhaseBanner();
   renderControls();
+  updateMpDeckCounts();
+  animateDealtCardsMP();
 }
 
 // ---- UI wiring ----
