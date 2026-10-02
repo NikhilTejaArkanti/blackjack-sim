@@ -32,11 +32,9 @@ const RESULT_TEXT_MP = {
   win: 'Win', lose: 'Lose', push: 'Push', blackjack: 'Blackjack!', surrender: 'Surrendered',
 };
 
+// Plain digits — easier to read aloud or type on a phone than mixed letters.
 function randomRoomCode() {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-  let s = '';
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 function escapeHtml(s) {
