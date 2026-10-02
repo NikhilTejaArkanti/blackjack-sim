@@ -436,10 +436,19 @@ function renderDealer() {
   }
 }
 
+// Positions seats along the lower rim of the oval table, as if looking
+// straight down at players sitting around it.
+function seatPosition(i, n) {
+  const t = n <= 1 ? 0.5 : i / (n - 1);
+  const left = 12 + t * 76; // 12% - 88% across
+  const top = 18 + Math.sin(t * Math.PI) * 64; // dips lowest in the middle
+  return { left, top };
+}
+
 function renderSeats() {
   const container = document.getElementById('mp-seats');
   const ids = Object.keys(game.players);
-  container.innerHTML = ids.map(id => {
+  container.innerHTML = ids.map((id, idx) => {
     const p = game.players[id];
     const hasCards = p.cards && p.cards.length > 0;
     const ev = hasCards ? evaluateHand(p.cards) : null;
@@ -457,8 +466,10 @@ function renderSeats() {
     const cardsHTML = (p.cards || []).map((c, i) => cardHTML(c, false, i >= prevCount)).join('');
     mpLastHandCounts[id] = (p.cards || []).length;
 
+    const pos = seatPosition(idx, ids.length);
+
     return `
-      <div class="mp-seat ${isTurn ? 'active-hand' : ''} ${isMe ? 'mp-seat-me' : ''}">
+      <div class="mp-seat ${isTurn ? 'active-hand' : ''} ${isMe ? 'mp-seat-me' : ''}" style="left:${pos.left}%; top:${pos.top}%;">
         <div class="mp-seat-name">${escapeHtml(p.name)}${isMe ? ' (you)' : ''}${escapeHtml(status)}</div>
         <div class="card-row">${cardsHTML}</div>
         <div class="mp-seat-footer">

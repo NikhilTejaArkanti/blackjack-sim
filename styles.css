@@ -947,41 +947,69 @@ footer {
   font-size: 0.82rem;
 }
 
-#mp-seats {
+/* Top-down oval table for multiplayer */
+#mp-table-shell {
+  border-radius: 50% / 38%;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+#mp-table-shell .table-arcs {
+  height: 60%;
+}
+
+#mp-dealer-area {
   position: relative;
   z-index: 2;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-  padding: 10px 0 18px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 40px;
+  min-height: 110px;
+}
+
+#mp-seats {
+  position: relative;
+  z-index: 2;
+  height: 380px;
+  margin-top: 6px;
 }
 
 .mp-seat {
+  position: absolute;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  background: rgba(0,0,0,0.25);
-  border-radius: 12px;
-  padding: 10px 14px;
-  min-width: 140px;
-}
-
-.mp-seat.active-hand {
-  outline: 2px solid var(--gold);
-  background: rgba(227, 192, 103, 0.12);
-}
-
-.mp-seat.mp-seat-me {
-  border: 1px solid rgba(227, 192, 103, 0.4);
+  gap: 4px;
+  min-width: 120px;
 }
 
 .mp-seat-name {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #e9e9df;
   text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.3);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.mp-seat.active-hand .mp-seat-name {
+  background: rgba(227, 192, 103, 0.25);
+  box-shadow: 0 0 0 1px var(--gold);
+  color: var(--gold);
+}
+
+.mp-seat.mp-seat-me .mp-seat-name {
+  box-shadow: 0 0 0 1px rgba(227, 192, 103, 0.5);
+}
+
+/* Cards laid flat and open directly on the felt, not boxed */
+.mp-seat .card-row {
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
 }
 
 .mp-seat-footer {
@@ -993,9 +1021,12 @@ footer {
 }
 
 .mp-bankroll {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--gold);
   font-weight: 700;
+  background: rgba(0,0,0,0.3);
+  padding: 1px 8px;
+  border-radius: 999px;
 }
 
 #mp-phase-banner {
