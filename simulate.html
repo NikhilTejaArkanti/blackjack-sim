@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Simulator</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Blackjack <span class="accent">Simulation</span></h1>
+    <a class="nav-link" href="index.html">&larr; Play</a>
+    <a class="nav-link nav-link-right" href="multiplayer.html">Multiplayer &rarr;</a>
+  </header>
+
+  <main id="sim-main">
+    <section id="setup-panel">
+      <h2>Run settings</h2>
+      <div class="setup-grid">
+        <label>Hands to simulate
+          <input type="number" id="num-hands" value="500" min="1" max="20000" step="1">
+        </label>
+        <label>Base bet / unit ($)
+          <input type="number" id="sim-bet" value="25" min="1" step="1">
+        </label>
+        <label>Starting bankroll ($)
+          <input type="number" id="sim-bankroll" value="1000" min="1" step="1">
+        </label>
+        <label>Decks in shoe
+          <input type="number" id="sim-decks" value="6" min="1" max="8" step="1">
+        </label>
+        <label>Mode
+          <select id="sim-mode">
+            <option value="fast">Fast (instant results)</option>
+            <option value="live">Live (watch it play, max 300 hands)</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="counting-toggle">
+        <input type="checkbox" id="counting-mode">
+        <span>Bet spread — bet more when the count is favorable, less (just the base unit) when it isn't</span>
+      </label>
+      <div id="spread-table" class="spread-table hidden">
+        <span class="spread-cell">TC &le; 1 (unfavorable) &rarr; 1&times; base bet</span>
+        <span class="spread-cell">TC 2 &rarr; 2&times;</span>
+        <span class="spread-cell">TC 3 &rarr; 4&times;</span>
+        <span class="spread-cell">TC 4 &rarr; 6&times;</span>
+        <span class="spread-cell">TC &ge; 5 (favorable) &rarr; 8&times; base bet</span>
+      </div>
+
+      <label class="counting-toggle">
+        <input type="checkbox" id="deviation-mode">
+        <span>Strategy deviations (Illustrious 18) — depart from basic strategy at specific counts, plus take insurance at TC &ge; 3</span>
+      </label>
+
+      <label class="counting-toggle">
+        <input type="checkbox" id="wong-mode">
+        <span>Wong in/out — sit out hands entirely while the count is below</span>
+        <input type="number" id="wong-threshold" value="1" step="1" class="wong-input">
+      </label>
+
+      <div class="setup-actions">
+        <button id="run-btn">Run Simulation</button>
+        <button id="export-btn" disabled>Export CSV</button>
+      </div>
+      <p class="setup-note">
+        The simulator always follows basic strategy from the chart exactly — every hit/stand/double/split/surrender
+        decision is computed, never guessed, and strategy itself never looks at the count, unless you turn on
+        strategy deviations above. A cut card is hidden at a random point (72&ndash;85% through the shoe, like a real
+        casino); once it's reached the current hand finishes normally and the whole shoe is reshuffled before the
+        next one. With everything off, every hand bets the base amount flat and the running/true count is shown
+        purely for fun. Bet spread bets more as the count climbs. Deviations change a handful of specific
+        hit/stand/double/split calls (and add insurance) once the count passes their threshold. Wonging skips hands
+        entirely — advancing the shoe without betting — until the count turns favorable, so you only ever play
+        favorable counts.
+      </p>
+    </section>
+
+    <section id="live-table" class="hidden">
+      <div class="count-readout">
+        <div class="count-chip"><span class="count-label">Shoe</span><span id="shoe-number" class="count-value">1</span></div>
+        <div class="count-chip"><span class="count-label">Cards Left</span><span id="cards-left" class="count-value">—</span></div>
+        <div class="count-chip"><span class="count-label">Running Count</span><span id="running-count" class="count-value">0</span></div>
+        <div class="count-chip highlight"><span class="count-label">True Count</span><span id="true-count" class="count-value">0.0</span></div>
+        <div class="count-chip"><span class="count-label">Cut Card</span><span id="cut-status" class="count-value">in shoe</span></div>
+        <div class="count-chip highlight" id="live-bet-chip"><span class="count-label">Bet This Hand</span><span id="live-bet" class="count-value">—</span></div>
+      </div>
+      <div class="live-cards">
+        <div class="live-side">
+          <h4>Dealer <span id="live-dealer-total" class="total-badge"></span></h4>
+          <div id="live-dealer-cards" class="card-row"></div>
+        </div>
+        <div class="live-side">
+          <h4>Player <span id="live-player-total" class="total-badge"></span></h4>
+          <div id="live-player-cards" class="card-row"></div>
+        </div>
+      </div>
+      <div id="live-hand-label" class="live-hand-label"></div>
+    </section>
+
+    <section id="stat-grid" class="hidden">
+      <div class="stat-card"><span class="stat-value" id="stat-hands">0</span><span class="stat-label">Hands Played</span></div>
+      <div class="stat-card win"><span class="stat-value" id="stat-wins">0</span><span class="stat-label">Wins</span></div>
+      <div class="stat-card lose"><span class="stat-value" id="stat-losses">0</span><span class="stat-label">Losses</span></div>
+      <div class="stat-card push"><span class="stat-value" id="stat-pushes">0</span><span class="stat-label">Pushes</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-blackjacks">0</span><span class="stat-label">Blackjacks</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-surrenders">0</span><span class="stat-label">Surrenders</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-winrate">0%</span><span class="stat-label">Win Rate</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-reshuffles">0</span><span class="stat-label">Reshuffles</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-avgbet">$0</span><span class="stat-label">Avg Bet</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-wonged">0</span><span class="stat-label">Hands Wonged Out</span></div>
+      <div class="stat-card"><span class="stat-value" id="stat-insurance">$0</span><span class="stat-label">Insurance Net</span></div>
+      <div class="stat-card wide"><span class="stat-value" id="stat-bankroll">$0</span><span class="stat-label">Final Bankroll</span></div>
+      <div class="stat-card wide"><span class="stat-value" id="stat-net">$0</span><span class="stat-label">Net Result</span></div>
+    </section>
+
+    <section id="log-panel" class="hidden">
+      <h3>Readings Log</h3>
+      <p id="log-note" class="log-note"></p>
+      <div id="log-table-wrap">
+        <table id="log-table">
+          <thead>
+            <tr>
+              <th>Hand</th>
+              <th>Shoe</th>
+              <th>Player</th>
+              <th>Dealer</th>
+              <th>Result</th>
+              <th>Bet</th>
+              <th>Net</th>
+              <th>Bankroll</th>
+              <th>RC</th>
+              <th>TC</th>
+            </tr>
+          </thead>
+          <tbody id="log-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>6-deck default shoe &#8226; Dealer stands on all 17s &#8226; Double After Split allowed &#8226; Frontend-only, nothing leaves your browser.</p>
+  </footer>
+
+<script src="cards.js"></script>
+<script src="strategy.js"></script>
+<script src="simulate.js"></script>
+</body>
+</html>
