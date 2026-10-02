@@ -20,6 +20,9 @@ let correctCount = 0;
 let totalCount = 0;
 let handCorrectCount = 0; // resets every new round — this hand only
 let handTotalCount = 0;
+let sessionWins = 0;
+let sessionLosses = 0;
+let sessionPushes = 0;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -361,6 +364,13 @@ function settleBets() {
     }
   }
 
+  for (const hand of playerHands) {
+    if (hand.result === 'win' || hand.result === 'blackjack') sessionWins += 1;
+    else if (hand.result === 'lose' || hand.result === 'surrender') sessionLosses += 1;
+    else if (hand.result === 'push') sessionPushes += 1;
+  }
+  updateSessionStats();
+
   const RESULT_TEXT = {
     win: 'Win',
     lose: 'Lose',
@@ -373,6 +383,14 @@ function settleBets() {
   banner.textContent = summary;
   banner.className = '';
   banner.classList.remove('hidden');
+}
+
+function updateSessionStats() {
+  document.getElementById('session-wins').textContent = sessionWins;
+  document.getElementById('session-losses').textContent = sessionLosses;
+  document.getElementById('session-pushes').textContent = sessionPushes;
+  const played = sessionWins + sessionLosses + sessionPushes;
+  document.getElementById('session-hands-played').textContent = `${played} hand${played === 1 ? '' : 's'}`;
 }
 
 function updateActionAvailability() {
@@ -547,3 +565,4 @@ toggleTotalsEl.addEventListener('change', () => {
 shoe = makeShoe(NUM_DECKS);
 render();
 updateAccuracy();
+updateSessionStats();
