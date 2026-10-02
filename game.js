@@ -18,6 +18,8 @@ let activeHandIndex = 0;
 let roundActive = false;
 let correctCount = 0;
 let totalCount = 0;
+let handCorrectCount = 0; // resets every new round — this hand only
+let handTotalCount = 0;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -67,6 +69,9 @@ async function startRound() {
   lastDealerCount = 0;
   lastHandCounts = [];
   dealerHoleWasHidden = true;
+  handCorrectCount = 0;
+  handTotalCount = 0;
+  updateHandAccuracy();
 
   document.getElementById('result-banner').classList.add('hidden');
   document.getElementById('bet-controls').classList.add('hidden');
@@ -136,8 +141,10 @@ function judgeDecision(actionTaken) {
   const rec = getRecommendation(shape, dealerUpRank(), legal);
 
   totalCount += 1;
+  handTotalCount += 1;
   const correct = rec.action === actionTaken;
-  if (correct) correctCount += 1;
+  if (correct) { correctCount += 1; handCorrectCount += 1; }
+  updateHandAccuracy();
 
   const handLabel = describeHand(shape);
   const dealerLabel = dealerUpRank() === '10' || ['J','Q','K'].includes(dealerUpRank()) ? '10' : dealerUpRank();
@@ -161,6 +168,12 @@ function describeHand(shape) {
   }
   if (shape.isSoft) return `Soft ${shape.hardTotal} (A,${shape.softAceTotal})`;
   return `Hard ${shape.hardTotal}`;
+}
+
+function updateHandAccuracy() {
+  const pct = handTotalCount ? Math.round((handCorrectCount / handTotalCount) * 100) : null;
+  document.getElementById('hand-accuracy-value').textContent = `${handCorrectCount}/${handTotalCount}`;
+  document.getElementById('hand-accuracy-pct').textContent = pct === null ? '–' : `${pct}%`;
 }
 
 function updateAccuracy() {
