@@ -420,7 +420,8 @@ function exportCSV(records) {
   URL.revokeObjectURL(url);
 }
 
-function cardHTML(card) {
+function cardHTML(card, hidden) {
+  if (hidden) return `<div class="card back card-deal"></div>`;
   const red = card.suit === '♥' || card.suit === '♦';
   return `<div class="card ${red ? 'red' : 'black'} card-deal"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
 }
@@ -435,19 +436,31 @@ function updateLiveCounts(state, upcomingBet) {
   }
 }
 
-function updateLiveHand(record, shoeNumber) {
+function updateLiveHand(record, shoeNumber, revealDealer) {
   document.getElementById('shoe-number').textContent = shoeNumber;
-  document.getElementById('live-dealer-cards').innerHTML = record.dealerCards.map(cardHTML).join('');
-  document.getElementById('live-dealer-total').textContent = `(${record.dealerTotal})`;
+  document.getElementById('live-dealer-cards').innerHTML = record.dealerCards
+    .map((c, i) => cardHTML(c, !revealDealer && i === 1)).join('');
+
+  const dealerTotalEl = document.getElementById('live-dealer-total');
+  if (revealDealer) {
+    dealerTotalEl.textContent = `(${record.dealerTotal})`;
+  } else {
+    const v = rankValue(record.dealerCards[0].rank);
+    dealerTotalEl.textContent = `(${v === 11 ? '11' : v} showing)`;
+  }
 
   const multi = record.playerHands.length > 1;
   document.getElementById('live-player-cards').innerHTML = record.playerHands
-    .map(h => h.cards.map(cardHTML).join('')).join('<span class="hand-gap"></span>');
+    .map(h => h.cards.map(c => cardHTML(c, false)).join('')).join('<span class="hand-gap"></span>');
   const totals = record.playerHands.map(h => evaluateHand(h.cards).total).join(' / ');
   document.getElementById('live-player-total').textContent = `(${totals})`;
 
-  const resultStr = record.playerHands.map((h, i) => `${multi ? `H${i + 1} ` : ''}${RESULT_TEXT[h.result] || ''}`).join(' · ');
-  document.getElementById('live-hand-label').textContent = `Hand #${record.hand} — ${resultStr}`;
+  if (revealDealer) {
+    const resultStr = record.playerHands.map((h, i) => `${multi ? `H${i + 1} ` : ''}${RESULT_TEXT[h.result] || ''}`).join(' · ');
+    document.getElementById('live-hand-label').textContent = `Hand #${record.hand} — ${resultStr}`;
+  } else {
+    document.getElementById('live-hand-label').textContent = `Hand #${record.hand} — playing…`;
+  }
 }
 
 function sleep(ms) {
@@ -489,8 +502,11 @@ async function runLiveSimulation(numHands, baseBet, startingBankroll, numDecks, 
     bankroll = newBankroll;
     records.push(record);
 
-    updateLiveHand(record, shoeNumber);
+    updateLiveHand(record, shoeNumber, false);
     updateLiveCounts(state, bet);
+    await sleep(320);
+
+    updateLiveHand(record, shoeNumber, true);
     renderStats(computeStats(records, startingBankroll), reshuffles, wongedOut);
     renderLogTable(records);
 
