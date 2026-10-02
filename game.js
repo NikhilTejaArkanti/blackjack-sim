@@ -509,7 +509,7 @@ function showSnackbar(title, message, type) {
   setTimeout(() => {
     bar.classList.remove('show');
     bar.addEventListener('transitionend', () => bar.remove(), { once: true });
-  }, 3200);
+  }, 6000);
 }
 
 function log(message, type) {
