@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Multiplayer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Blackjack <span class="accent">Multiplayer</span></h1>
+    <a class="nav-link" href="index.html">&larr; Play</a>
+    <a class="nav-link nav-link-right" href="simulate.html">Simulation &rarr;</a>
+  </header>
+
+  <div id="snackbar-container" aria-live="polite"></div>
+
+  <main id="mp-main">
+    <section id="lobby-panel">
+      <h2>Join a table</h2>
+      <p class="setup-note">
+        No server required — this uses WebRTC to connect players directly to each other. The only outside service
+        involved is PeerJS's free public broker, used once just to introduce two browsers to each other; every card,
+        bet, and move after that travels peer-to-peer. One player creates a table and shares the room code; everyone
+        else joins with that code. If the table creator closes their tab, the table ends — there's no host handover.
+      </p>
+      <div class="setup-grid">
+        <label>Your name
+          <input type="text" id="player-name" maxlength="16" placeholder="Player">
+        </label>
+        <label>Room code (to join)
+          <input type="text" id="room-code-input" maxlength="12" placeholder="e.g. table42">
+        </label>
+      </div>
+      <div class="setup-actions">
+        <button id="create-btn">Create Table</button>
+        <button id="join-btn">Join Table</button>
+      </div>
+      <p id="lobby-status" class="log-note"></p>
+    </section>
+
+    <section id="mp-table-wrap" class="hidden">
+      <div class="room-banner">
+        <span>Room code: <strong id="room-code-display"></strong></span>
+        <button id="copy-code-btn">Copy</button>
+        <span id="connection-status" class="connection-status"></span>
+        <button id="leave-btn">Leave Table</button>
+      </div>
+
+      <div class="table-shell" id="mp-table-shell">
+        <svg class="table-arcs" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <path id="arcTop" d="M 90 130 A 430 230 0 0 0 910 130" fill="none"/>
+          <text class="arc-text arc-text-main">
+            <textPath href="#arcTop" startOffset="50%" text-anchor="middle">BLACKJACK PAYS 3 TO 2</textPath>
+          </text>
+          <path id="arcBottom" d="M 150 300 A 370 190 0 0 0 850 300" fill="none"/>
+          <text class="arc-text arc-text-sub">
+            <textPath href="#arcBottom" startOffset="50%" text-anchor="middle">SEAT UP TO 6 PLAYERS &#8226; NO SPLITTING</textPath>
+          </text>
+        </svg>
+
+        <section id="mp-dealer-area">
+          <div id="mp-dealer-cards" class="card-row"></div>
+          <span id="mp-dealer-total" class="total-badge"></span>
+        </section>
+
+        <section id="mp-seats"></section>
+
+        <section id="mp-phase-banner" class="hidden"></section>
+
+        <section id="mp-controls">
+          <div id="mp-bet-controls" class="hidden">
+            <div class="chip-tray">
+              <button data-chip="5" class="chip chip-5">5</button>
+              <button data-chip="25" class="chip chip-25">25</button>
+              <button data-chip="100" class="chip chip-100">100</button>
+              <button data-chip="500" class="chip chip-500">500</button>
+            </div>
+            <div class="tray-actions">
+              <button id="mp-clear-bet">Clear</button>
+              <button id="mp-place-bet">Place Bet &amp; Ready Up</button>
+            </div>
+            <div class="hand-bet"><span class="hand-bet-chip"></span><span id="mp-current-bet">$0</span></div>
+          </div>
+
+          <nav id="mp-action-controls" class="hidden">
+            <button id="mp-stand-btn">Stand</button>
+            <button id="mp-hit-btn">Hit</button>
+            <button id="mp-double-btn">Double</button>
+            <button id="mp-surrender-btn">Surrender</button>
+          </nav>
+
+          <div id="mp-waiting-note" class="hidden"></div>
+
+          <button id="mp-host-next-btn" class="hidden">Deal Next Round</button>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>6-deck shoe &#8226; Dealer stands on all 17s &#8226; No split in multiplayer &#8226; Frontend-only, peer-to-peer, nothing hosted on a server.</p>
+  </footer>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="cards.js"></script>
+<script src="strategy.js"></script>
+<script src="multiplayer.js"></script>
+</body>
+</html>

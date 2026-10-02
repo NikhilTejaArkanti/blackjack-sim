@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Trainer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Blackjack <span class="accent">Strategy Trainer</span></h1>
+    <div class="nav-links-left">
+      <a class="nav-link-plain" href="simulate.html">Simulation</a>
+      <a class="nav-link-plain" href="multiplayer.html">Multiplayer</a>
+    </div>
+    <label class="toggle-totals">
+      <input type="checkbox" id="toggle-totals">
+      <span>Show hand totals</span>
+    </label>
+  </header>
+
+  <div id="snackbar-container" aria-live="polite"></div>
+
+  <main>
+    <div class="table-shell">
+      <svg class="table-arcs" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <path id="arcTop" d="M 90 130 A 430 230 0 0 0 910 130" fill="none"/>
+        <text class="arc-text arc-text-main">
+          <textPath href="#arcTop" startOffset="50%" text-anchor="middle">BLACKJACK PAYS 3 TO 2</textPath>
+        </text>
+        <path id="arcBottom" d="M 150 300 A 370 190 0 0 0 850 300" fill="none"/>
+        <text class="arc-text arc-text-sub">
+          <textPath href="#arcBottom" startOffset="50%" text-anchor="middle">INSURANCE PAYS 2 TO 1 &#8226; DEALER STANDS ON ALL 17'S</textPath>
+        </text>
+      </svg>
+
+      <section id="dealer-area">
+        <div id="dealer-cards" class="card-row"></div>
+        <span id="dealer-total" class="total-badge"></span>
+      </section>
+
+      <section id="player-area">
+        <div id="player-hands"></div>
+        <nav id="action-controls" class="hidden">
+          <button id="stand-btn">Stand</button>
+          <button id="hit-btn">Hit</button>
+          <button id="double-btn">Double</button>
+          <button id="split-btn">Split</button>
+          <button id="surrender-btn">Surrender</button>
+        </nav>
+      </section>
+
+      <section id="result-banner" class="hidden"></section>
+
+      <section id="table-footer">
+        <div class="spot" id="bankroll-spot">
+          <div class="chip-stack" data-denom="bankroll"></div>
+          <span class="spot-label">Bankroll</span>
+          <span class="spot-value">$<span id="bankroll">1000</span></span>
+        </div>
+
+        <div id="bet-controls">
+          <div class="chip-tray">
+            <button data-chip="5" class="chip chip-5">5</button>
+            <button data-chip="25" class="chip chip-25">25</button>
+            <button data-chip="100" class="chip chip-100">100</button>
+            <button data-chip="500" class="chip chip-500">500</button>
+          </div>
+          <div class="tray-actions">
+            <button id="clear-bet">Clear</button>
+            <button id="deal-btn">Deal</button>
+          </div>
+        </div>
+
+        <div class="spot" id="bet-spot">
+          <div class="chip-stack" data-denom="bet"></div>
+          <span class="spot-label">Bet</span>
+          <span class="spot-value">$<span id="current-bet">25</span></span>
+        </div>
+      </section>
+
+      <div id="next-controls" class="hidden">
+        <button id="new-hand-btn">New Hand</button>
+      </div>
+    </div>
+
+    <section id="feedback-panel">
+      <h3>Strategy Coach</h3>
+      <div id="feedback-log"></div>
+      <div id="accuracy">Accuracy: <span id="accuracy-value">0 / 0 (–)</span></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>6-deck shoe &#8226; Dealer stands on all 17s &#8226; Double After Split allowed &#8226; Frontend-only, nothing leaves your browser.</p>
+  </footer>
+
+<script src="cards.js"></script>
+<script src="strategy.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
