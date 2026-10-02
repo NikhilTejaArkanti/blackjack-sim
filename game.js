@@ -46,6 +46,9 @@ function startRound() {
   playerHands = [newPlayerHand([drawCard(), drawCard()], currentBet)];
   activeHandIndex = 0;
   roundActive = true;
+  lastDealerCount = 0;
+  lastHandCounts = [];
+  dealerHoleWasHidden = true;
 
   document.getElementById('result-banner').classList.add('hidden');
   document.getElementById('bet-controls').classList.add('hidden');
@@ -192,6 +195,7 @@ function doSplit() {
   }
 
   playerHands = [handA, handB];
+  lastHandCounts = [0, 0];
   activeHandIndex = 0;
   render();
 
@@ -323,16 +327,26 @@ function updateActionAvailability() {
   document.getElementById('surrender-btn').disabled = !legal.R;
 }
 
-function cardHTML(card, hidden) {
-  if (hidden) return `<div class="card back"></div>`;
+let lastDealerCount = 0;
+let lastHandCounts = [];
+let dealerHoleWasHidden = true;
+
+function cardHTML(card, hidden, isNew, isFlip) {
+  const animClass = isFlip ? 'card-flip' : (isNew ? 'card-deal' : '');
+  if (hidden) return `<div class="card back ${animClass}"></div>`;
   const red = card.suit === '♥' || card.suit === '♦';
-  return `<div class="card ${red ? 'red' : 'black'}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
+  return `<div class="card ${red ? 'red' : 'black'} ${animClass}"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>`;
 }
 
 function render(revealDealer) {
   const dealerCardsEl = document.getElementById('dealer-cards');
   const hideHole = !revealDealer && roundActive;
-  dealerCardsEl.innerHTML = dealerHand.map((c, i) => cardHTML(c, hideHole && i === 1)).join('');
+  dealerCardsEl.innerHTML = dealerHand.map((c, i) => {
+    const isFlip = i === 1 && dealerHoleWasHidden && !hideHole;
+    return cardHTML(c, hideHole && i === 1, i >= lastDealerCount, isFlip);
+  }).join('');
+  lastDealerCount = dealerHand.length;
+  dealerHoleWasHidden = hideHole;
 
   const dealerTotalEl = document.getElementById('dealer-total');
   if (hideHole) {
@@ -355,13 +369,17 @@ function render(revealDealer) {
       const RESULT_TEXT = { win: 'Win', lose: 'Lose', push: 'Push', blackjack: 'Blackjack!', surrender: 'Surrendered' };
       status = ` — ${RESULT_TEXT[hand.result]}`;
     }
+    const prevCount = lastHandCounts[idx] || 0;
+    const cardsHTML = hand.cards.map((c, i) => cardHTML(c, false, i >= prevCount)).join('');
+    lastHandCounts[idx] = hand.cards.length;
     return `
       <div class="hand-block ${isActive ? 'active-hand' : ''}">
         <h3>${label} <span class="total-badge">(${ev.total}${ev.isSoft ? ' soft' : ''})</span>${status}</h3>
-        <div class="card-row">${hand.cards.map(c => cardHTML(c, false)).join('')}</div>
+        <div class="card-row">${cardsHTML}</div>
         <div class="hand-bet"><span class="hand-bet-chip"></span>$${hand.bet}</div>
       </div>`;
   }).join('');
+  lastHandCounts.length = playerHands.length;
 
   document.getElementById('bankroll').textContent = bankroll;
   document.getElementById('current-bet').textContent = currentBet;
