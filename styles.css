@@ -397,6 +397,69 @@ main {
   animation: flipReveal 0.28s ease-out both;
 }
 
+/* ---- Shoe / discard pile ---- */
+
+.deck-stack {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  left: 18px;
+  width: 44px;
+  height: 62px;
+}
+
+.discard-stack {
+  left: auto;
+  right: 18px;
+}
+
+.deck-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 62px;
+  border-radius: 5px;
+  background: repeating-linear-gradient(45deg, #1d2d50, #1d2d50 5px, #2a3d6e 5px, #2a3d6e 10px);
+  border: 2px solid var(--gold);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+}
+
+.discard-stack .deck-card {
+  background: #e9e4d5;
+  border: 2px solid rgba(0,0,0,0.25);
+}
+
+.deck-card:nth-child(1) { transform: translate(0, 0); z-index: 1; }
+.deck-card:nth-child(2) { transform: translate(2px, -2px); z-index: 2; }
+.deck-card:nth-child(3) { transform: translate(4px, -4px); z-index: 3; }
+
+.deck-count {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--gold);
+  background: rgba(0,0,0,0.4);
+  border-radius: 999px;
+  padding: 1px 0;
+}
+
+.deck-label {
+  position: absolute;
+  top: -16px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9fb8a8;
+}
+
 .card .suit { font-size: 1.35rem; }
 .card.red { color: var(--red); }
 .card.black { color: #111; }
@@ -956,6 +1019,16 @@ footer {
 
 #mp-table-shell .table-arcs {
   height: 60%;
+}
+
+#mp-table-shell .deck-stack {
+  top: 120px;
+  left: 190px;
+}
+
+#mp-table-shell .discard-stack {
+  left: auto;
+  right: 190px;
 }
 
 #mp-dealer-area {
