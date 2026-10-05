@@ -78,25 +78,29 @@
     </section>
 
     <section id="live-table" class="hidden">
-      <div class="count-readout">
-        <div class="count-chip"><span class="count-label">Shoe</span><span id="shoe-number" class="count-value">1</span></div>
-        <div class="count-chip"><span class="count-label">Cards Left</span><span id="cards-left" class="count-value">—</span></div>
-        <div class="count-chip"><span class="count-label">Running Count</span><span id="running-count" class="count-value">0</span></div>
-        <div class="count-chip highlight"><span class="count-label">True Count</span><span id="true-count" class="count-value">0.0</span></div>
-        <div class="count-chip"><span class="count-label">Cut Card</span><span id="cut-status" class="count-value">in shoe</span></div>
-        <div class="count-chip highlight" id="live-bet-chip"><span class="count-label">Bet This Hand</span><span id="live-bet" class="count-value">—</span></div>
-      </div>
-      <div class="live-cards">
-        <div class="live-side">
-          <h4>Dealer <span id="live-dealer-total" class="total-badge"></span></h4>
-          <div id="live-dealer-cards" class="card-row"></div>
+      <div class="live-table-layout">
+        <div class="live-main">
+          <div class="live-cards">
+            <div class="live-side">
+              <h4>Dealer <span id="live-dealer-total" class="total-badge"></span></h4>
+              <div id="live-dealer-cards" class="card-row"></div>
+            </div>
+            <div class="live-side">
+              <h4>Player <span id="live-player-total" class="total-badge"></span></h4>
+              <div id="live-player-cards" class="card-row"></div>
+            </div>
+          </div>
+          <div id="live-hand-label" class="live-hand-label"></div>
         </div>
-        <div class="live-side">
-          <h4>Player <span id="live-player-total" class="total-badge"></span></h4>
-          <div id="live-player-cards" class="card-row"></div>
+        <div class="count-readout">
+          <div class="count-chip"><span class="count-label">Shoe</span><span id="shoe-number" class="count-value">1</span></div>
+          <div class="count-chip"><span class="count-label">Cards Left</span><span id="cards-left" class="count-value">—</span></div>
+          <div class="count-chip"><span class="count-label">Running Count</span><span id="running-count" class="count-value">0</span></div>
+          <div class="count-chip highlight"><span class="count-label">True Count</span><span id="true-count" class="count-value">0.0</span></div>
+          <div class="count-chip"><span class="count-label">Cut Card</span><span id="cut-status" class="count-value">in shoe</span></div>
+          <div class="count-chip highlight" id="live-bet-chip"><span class="count-label">Bet This Hand</span><span id="live-bet" class="count-value">—</span></div>
         </div>
       </div>
-      <div id="live-hand-label" class="live-hand-label"></div>
     </section>
 
     <section id="stat-grid" class="hidden">

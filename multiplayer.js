@@ -16,6 +16,7 @@ let hostConn = null; // client-side: connection to the host
 let connections = {}; // host-side: peerId -> DataConnection
 let shoe = [];
 let discardCount = 0;
+let runningCount = 0;
 let game = null;
 let myName = 'Player';
 let roomCode = '';
@@ -50,12 +51,20 @@ function ensureShoe() {
   if (shoe.length < 15) {
     shoe = makeShoe(6);
     discardCount = 0;
+    runningCount = 0;
   }
 }
 
 function drawCard() {
   ensureShoe();
-  return shoe.pop();
+  const card = shoe.pop();
+  runningCount += hiLoValue(card);
+  return card;
+}
+
+function trueCountNow() {
+  const decksRemaining = Math.max(shoe.length / 52, 0.25);
+  return runningCount / decksRemaining;
 }
 
 // Draws one card onto the given array, then broadcasts and pauses so every
@@ -78,6 +87,7 @@ function hostInit(name) {
   };
   shoe = makeShoe(6);
   discardCount = 0;
+  runningCount = 0;
   game.shoeCount = shoe.length;
   game.discardCount = discardCount;
   addPlayerToGame(selfId, name);
@@ -309,6 +319,8 @@ function hostHandleMessage(peerId, msg) {
 function broadcastState() {
   game.shoeCount = shoe.length;
   game.discardCount = discardCount;
+  game.runningCount = runningCount;
+  game.trueCount = trueCountNow();
   const payload = { type: 'state', state: game };
   for (const id in connections) {
     try { connections[id].send(payload); } catch (e) { /* peer likely gone; disconnect handler will clean up */ }
@@ -473,6 +485,11 @@ function updateMpDeckCounts() {
   if (shoeCountEl) shoeCountEl.textContent = game.shoeCount ?? '';
   if (discardCountEl) discardCountEl.textContent = game.discardCount ?? 0;
   if (discardVisual) discardVisual.classList.toggle('hidden', !game.discardCount);
+
+  const runningCountEl = document.getElementById('mp-running-count');
+  const trueCountEl = document.getElementById('mp-true-count');
+  if (runningCountEl) runningCountEl.textContent = game.runningCount ?? 0;
+  if (trueCountEl) trueCountEl.textContent = (game.trueCount ?? 0).toFixed(1);
 }
 
 function renderDealer() {
