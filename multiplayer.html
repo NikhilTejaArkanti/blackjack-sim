@@ -18,6 +18,23 @@
 
   <div id="snackbar-container" aria-live="polite"></div>
 
+  <aside id="mp-stats-panel" class="side-stats-panel hidden">
+    <div class="stats-block">
+      <span class="hand-accuracy-label">Your Session</span>
+      <div class="session-row">
+        <span class="session-stat session-win"><span id="mp-session-wins">0</span><small>W</small></span>
+        <span class="session-stat session-lose"><span id="mp-session-losses">0</span><small>L</small></span>
+        <span class="session-stat session-push"><span id="mp-session-pushes">0</span><small>P</small></span>
+      </div>
+      <span class="hand-accuracy-pct" id="mp-session-hands-played">0 hands</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stats-block">
+      <span class="hand-accuracy-label">Last Hands</span>
+      <div class="history-graph" id="mp-history-graph"></div>
+    </div>
+  </aside>
+
   <main id="mp-main">
     <section id="lobby-panel">
       <h2>Join a table</h2>
@@ -126,6 +143,7 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="cards.js"></script>
 <script src="strategy.js"></script>
+<script src="history-graph.js"></script>
 <script src="multiplayer.js"></script>
 </body>
 </html>

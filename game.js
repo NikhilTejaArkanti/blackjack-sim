@@ -23,6 +23,8 @@ let handTotalCount = 0;
 let sessionWins = 0;
 let sessionLosses = 0;
 let sessionPushes = 0;
+let roundStartBankroll = 1000;
+let resultHistory = [];
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -64,6 +66,7 @@ async function startRound() {
   if (currentBet > bankroll) { alert('Bet exceeds bankroll.'); return; }
 
   busy = true;
+  roundStartBankroll = bankroll;
   bankroll -= currentBet;
   dealerHand = [];
   playerHands = [newPlayerHand([], currentBet)];
@@ -370,6 +373,8 @@ function settleBets() {
     else if (hand.result === 'push') sessionPushes += 1;
   }
   updateSessionStats();
+  resultHistory.push({ net: bankroll - roundStartBankroll });
+  renderResultHistory('history-graph', resultHistory);
 
   const RESULT_TEXT = {
     win: 'Win',

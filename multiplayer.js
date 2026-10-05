@@ -23,6 +23,12 @@ let roomCode = '';
 let pendingBet = 0;
 let lastPlacedBet = 0;
 let lastSeenRound = -1;
+let mpSessionWins = 0;
+let mpSessionLosses = 0;
+let mpSessionPushes = 0;
+let mpResultHistory = [];
+let mpLastSettledRound = -1;
+let mpRoundStartBankroll = 1000;
 
 const MP_DEAL_DELAY_MS = 260;
 
@@ -399,15 +405,26 @@ function leaveTable(hostClosed) {
   try { if (peer) peer.destroy(); } catch (e) { /* already destroyed */ }
   peer = null; hostConn = null; connections = {}; game = null; isHost = false; selfId = null;
   pendingBet = 0; lastPlacedBet = 0; lastSeenRound = -1;
+  mpSessionWins = 0; mpSessionLosses = 0; mpSessionPushes = 0; mpResultHistory = []; mpLastSettledRound = -1;
   document.getElementById('mp-table-wrap').classList.add('hidden');
   document.getElementById('lobby-panel').classList.remove('hidden');
+  document.getElementById('mp-stats-panel').classList.add('hidden');
   if (!hostClosed) document.getElementById('lobby-status').textContent = '';
 }
 
 function showTable() {
   document.getElementById('lobby-panel').classList.add('hidden');
   document.getElementById('mp-table-wrap').classList.remove('hidden');
+  document.getElementById('mp-stats-panel').classList.remove('hidden');
   document.getElementById('room-code-display').textContent = roomCode;
+}
+
+function updateMpSessionStats() {
+  document.getElementById('mp-session-wins').textContent = mpSessionWins;
+  document.getElementById('mp-session-losses').textContent = mpSessionLosses;
+  document.getElementById('mp-session-pushes').textContent = mpSessionPushes;
+  const played = mpSessionWins + mpSessionLosses + mpSessionPushes;
+  document.getElementById('mp-session-hands-played').textContent = `${played} hand${played === 1 ? '' : 's'}`;
 }
 
 // ---- Local strategy coach (client-side only, purely informational) ----
@@ -646,6 +663,29 @@ function renderAll() {
   renderControls();
   updateMpDeckCounts();
   animateDealtCardsMP();
+  trackMySessionResult();
+}
+
+// Bankroll only changes once a round actually deals (bet deduction happens
+// in dealRound on the host), so any snapshot taken while still in the
+// betting phase equals "bankroll before this round's bet" — track it here
+// and diff against it once the round settles to get this player's net.
+function trackMySessionResult() {
+  const me = game.players[selfId];
+  if (!me) return;
+  if (game.phase === 'betting') {
+    mpRoundStartBankroll = me.bankroll;
+    return;
+  }
+  if (game.phase === 'settled' && me.result && game.roundNum !== mpLastSettledRound) {
+    mpLastSettledRound = game.roundNum;
+    if (me.result === 'win' || me.result === 'blackjack') mpSessionWins += 1;
+    else if (me.result === 'lose' || me.result === 'surrender') mpSessionLosses += 1;
+    else if (me.result === 'push') mpSessionPushes += 1;
+    updateMpSessionStats();
+    mpResultHistory.push({ net: me.bankroll - mpRoundStartBankroll });
+    renderResultHistory('mp-history-graph', mpResultHistory);
+  }
 }
 
 // ---- UI wiring ----

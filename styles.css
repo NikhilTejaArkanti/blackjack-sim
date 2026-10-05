@@ -28,7 +28,7 @@
   pointer-events: none;
 }
 
-#hand-accuracy-panel {
+.side-stats-panel {
   position: fixed;
   left: 20px;
   top: 50%;
@@ -45,6 +45,50 @@
   box-shadow: 0 10px 24px rgba(0,0,0,0.45);
   min-width: 140px;
 }
+
+/* ---- Win/loss history sparkline (shared by play + multiplayer panels) ---- */
+
+.history-graph {
+  overflow-x: auto;
+  padding: 2px 0;
+  max-width: 180px;
+}
+
+.history-graph-inner {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 44px;
+  min-width: 100%;
+  width: max-content;
+}
+
+.history-baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(227, 192, 103, 0.25);
+}
+
+.history-bar-wrap {
+  position: relative;
+  width: 7px;
+  flex: 0 0 auto;
+}
+
+.history-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: 2px;
+}
+
+.history-bar.win { background: var(--correct); bottom: 50%; }
+.history-bar.lose { background: var(--wrong); top: 50%; }
+.history-bar.push { background: #9fb8a8; top: calc(50% - 1px); height: 2px; }
 
 .stats-block {
   display: flex;
@@ -104,7 +148,7 @@
 .session-push { color: #cfead9; }
 
 @media (max-width: 900px) {
-  #hand-accuracy-panel {
+  .side-stats-panel {
     left: auto;
     right: 12px;
     top: 12px;

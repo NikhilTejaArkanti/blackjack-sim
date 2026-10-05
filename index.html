@@ -22,7 +22,7 @@
 
   <div id="snackbar-container" aria-live="polite"></div>
 
-  <aside id="hand-accuracy-panel">
+  <aside id="hand-accuracy-panel" class="side-stats-panel">
     <div class="stats-block">
       <span class="hand-accuracy-label">This Hand &#8226; Strategy</span>
       <span class="hand-accuracy-value" id="hand-accuracy-value">0/0</span>
@@ -37,6 +37,11 @@
         <span class="session-stat session-push"><span id="session-pushes">0</span><small>P</small></span>
       </div>
       <span class="hand-accuracy-pct" id="session-hands-played">0 hands</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stats-block">
+      <span class="hand-accuracy-label">Last Hands</span>
+      <div class="history-graph" id="history-graph"></div>
     </div>
   </aside>
 
@@ -127,6 +132,7 @@
 
 <script src="cards.js"></script>
 <script src="strategy.js"></script>
+<script src="history-graph.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
