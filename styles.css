@@ -1343,3 +1343,187 @@ footer {
     font-size: 0.85rem;
   }
 }
+
+/* ---- Right-aligned header nav links (mirrors .nav-links-left) ---- */
+
+.nav-links-right {
+  position: absolute;
+  right: 28px;
+  display: flex;
+  gap: 18px;
+}
+
+/* ---- Card counting trainer page ---- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(3, 10, 7, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-box {
+  background: var(--panel-bg);
+  border: 1px solid rgba(227, 192, 103, 0.35);
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 540px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+}
+
+.modal-box h2 {
+  margin: 0 0 12px;
+  color: var(--gold);
+}
+
+.modal-box p {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #d7e8de;
+  margin: 0 0 12px;
+}
+
+.modal-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #d7e8de;
+}
+
+.modal-box button {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--gold);
+  color: #1a1a1a;
+}
+
+#cc-main {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#cc-setup-panel,
+#cc-table,
+#cc-quiz-panel,
+#cc-result-panel {
+  background: var(--panel-bg);
+  border-radius: 14px;
+  padding: 20px 24px;
+  border: 1px solid rgba(227, 192, 103, 0.25);
+}
+
+#cc-setup-panel h2,
+#cc-quiz-panel h2,
+#cc-result-panel h2 {
+  margin: 0 0 14px;
+  color: var(--gold);
+  font-size: 1.05rem;
+}
+
+.cc-option-group {
+  margin-bottom: 16px;
+}
+
+.cc-option-label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9fb8a8;
+  margin-bottom: 8px;
+}
+
+.cc-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cc-option-btn {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(227, 192, 103, 0.35);
+  background: #0d1a14;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.cc-option-btn.active {
+  background: var(--gold);
+  color: #1a1a1a;
+  border-color: var(--gold);
+}
+
+#cc-table {
+  position: relative;
+  padding-top: 78px;
+}
+
+#cc-shoe-visual {
+  top: 16px;
+  left: 20px;
+}
+
+#cc-card-row-wrap {
+  overflow-x: auto;
+  padding: 10px 4px 16px 90px;
+}
+
+#cc-card-row-wrap .card-row {
+  flex-wrap: nowrap;
+}
+
+.cc-quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.cc-quiz-btn {
+  padding: 16px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(227, 192, 103, 0.35);
+  background: #0d1a14;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.stat-grid-cc {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-value.cc-correct { color: var(--correct); }
+.stat-value.cc-wrong { color: var(--wrong); }
+
+#cc-session-panel {
+  background: var(--panel-bg);
+  border: 1px solid rgba(227, 192, 103, 0.25);
+  border-radius: 14px;
+  padding: 14px 20px;
+  align-self: center;
+}
+
+@media (max-width: 640px) {
+  #cc-main { padding: 14px; }
+  #cc-setup-panel, #cc-table, #cc-quiz-panel, #cc-result-panel { padding: 16px; }
+  .cc-quiz-btn { font-size: 0.95rem; padding: 12px 8px; }
+}

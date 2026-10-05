@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Card Counting Trainer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Blackjack <span class="accent">Card Counting</span></h1>
+    <div class="nav-links-left">
+      <a class="nav-link-plain" href="index.html">&larr; Play</a>
+      <a class="nav-link-plain" href="simulate.html">Simulation</a>
+      <a class="nav-link-plain" href="multiplayer.html">Multiplayer</a>
+    </div>
+  </header>
+
+  <div id="cc-instructions-overlay" class="modal-overlay">
+    <div class="modal-box">
+      <h2>How Card Counting Works</h2>
+      <p>This drill uses the <strong>Hi-Lo</strong> system, the same count the strategy deviations on the
+      Simulation page use:</p>
+      <ul class="modal-list">
+        <li><strong>2 &ndash; 6</strong> &rarr; +1</li>
+        <li><strong>7 &ndash; 9</strong> &rarr; 0</li>
+        <li><strong>10, J, Q, K, A</strong> &rarr; &minus;1</li>
+      </ul>
+      <p><strong>Running count</strong> is just the sum of every value you've seen so far. <strong>True count</strong>
+      is the running count divided by the number of decks remaining in the shoe &mdash; it's what actually tells you
+      how favorable the shoe is, since a +4 running count means a lot more in a 1-deck shoe than a 6-deck one.</p>
+      <p>Pick a shoe size and a dealing pace, then watch the cards go by and keep a running tally in your head. Hit
+      <strong>Stop &amp; Guess</strong> whenever you're ready, and you'll be quizzed on both numbers.</p>
+      <button id="cc-dismiss-instructions">Got it &mdash; let's count</button>
+    </div>
+  </div>
+
+  <main id="cc-main">
+    <section id="cc-setup-panel">
+      <h2>Setup</h2>
+      <div class="cc-option-group">
+        <span class="cc-option-label">Shoe Size</span>
+        <div class="cc-options" id="cc-deck-options">
+          <button type="button" class="cc-option-btn" data-decks="1">1 Deck</button>
+          <button type="button" class="cc-option-btn active" data-decks="6">6 Decks</button>
+        </div>
+      </div>
+      <div class="cc-option-group">
+        <span class="cc-option-label">Dealing Pace</span>
+        <div class="cc-options" id="cc-pace-options">
+          <button type="button" class="cc-option-btn" data-pace="slow">Slow</button>
+          <button type="button" class="cc-option-btn active" data-pace="medium">Medium</button>
+          <button type="button" class="cc-option-btn" data-pace="fast">Fast</button>
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button id="cc-start-btn">Start Dealing</button>
+        <button id="cc-help-btn">Show Instructions</button>
+      </div>
+      <p class="setup-note">
+        Cards deal one at a time from a freshly shuffled shoe. Nothing tells you the running count while you
+        watch &mdash; that's the part you have to track yourself. Stop whenever you like and you'll be asked to pick
+        the running count and true count from four options each.
+      </p>
+    </section>
+
+    <section id="cc-table" class="hidden">
+      <div class="deck-stack" id="cc-shoe-visual" title="Shoe">
+        <div class="deck-card"></div><div class="deck-card"></div><div class="deck-card"></div>
+        <span class="deck-count" id="cc-shoe-count">0</span>
+        <span class="deck-label">Shoe</span>
+      </div>
+      <div id="cc-card-row-wrap">
+        <div id="cc-card-row" class="card-row"></div>
+      </div>
+      <div class="setup-actions">
+        <button id="cc-stop-btn">Stop &amp; Guess the Count</button>
+      </div>
+    </section>
+
+    <section id="cc-quiz-panel" class="hidden">
+      <h2 id="cc-quiz-question"></h2>
+      <p class="setup-note" id="cc-quiz-subnote"></p>
+      <div class="cc-quiz-options" id="cc-quiz-options"></div>
+    </section>
+
+    <section id="cc-result-panel" class="hidden">
+      <h2 id="cc-result-heading"></h2>
+      <div id="cc-result-grid" class="stat-grid-cc">
+        <div class="stat-card"><span class="stat-value" id="cc-actual-running"></span><span class="stat-label">Actual Running Count</span></div>
+        <div class="stat-card"><span class="stat-value" id="cc-your-running"></span><span class="stat-label">Your Answer</span></div>
+        <div class="stat-card"><span class="stat-value" id="cc-actual-true"></span><span class="stat-label">Actual True Count</span></div>
+        <div class="stat-card"><span class="stat-value" id="cc-your-true"></span><span class="stat-label">Your Answer</span></div>
+      </div>
+      <div class="setup-actions">
+        <button id="cc-again-btn">Deal Another Round</button>
+        <button id="cc-settings-btn">Change Settings</button>
+      </div>
+    </section>
+
+    <aside id="cc-session-panel">
+      <div class="stats-block">
+        <span class="hand-accuracy-label">Session Accuracy</span>
+        <span class="hand-accuracy-value" id="cc-session-score">0/0</span>
+        <span class="hand-accuracy-pct" id="cc-session-pct">&ndash;</span>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <p>Hi-Lo counting drill &#8226; Choose 1 or 6 decks and a dealing pace &#8226; Frontend-only, nothing leaves your browser.</p>
+  </footer>
+
+<script src="cards.js"></script>
+<script src="counting.js"></script>
+</body>
+</html>
